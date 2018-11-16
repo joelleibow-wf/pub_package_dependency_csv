@@ -1,0 +1,6 @@
+name: pub_package_dependency_graph
+version: 0.1.0
+environment:
+  sdk: ^2.0.0
+dependencies:
+  args: ^1.5.0
