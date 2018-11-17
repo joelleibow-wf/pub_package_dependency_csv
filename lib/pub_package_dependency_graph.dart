@@ -1,3 +1,3 @@
 library pub_package_dependency_graph;
 
-export './src/command_runner.dart';
+export './src/service.dart';

@@ -4,3 +4,4 @@ environment:
   sdk: ^2.0.0
 dependencies:
   args: ^1.5.0
+  path: ^1.6.2
