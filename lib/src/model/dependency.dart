@@ -1,5 +1,5 @@
 import 'package:pub_semver/pub_semver.dart';
-import 'package:pubspec_parse/pubspec_parse.dart' as parse;
+import 'package:yaml/yaml.dart';
 
 class Dependency {
   final String name;
@@ -21,23 +21,23 @@ class Dependency {
   Dependency._(this.name, String versionConstraint, this.isDevDependency)
       : this.versionConstraint = _parseOrNull(versionConstraint);
 
-  static Set<Dependency> getDependencies(parse.Pubspec pubspec) {
+  static Set<Dependency> getDependencies(YamlMap pubspec) {
     var deps = new Set<Dependency>();
 
-    _populateFromSection(pubspec.dependencies, deps, false);
-    _populateFromSection(pubspec.devDependencies, deps, true);
+    _populateFromSection(pubspec['dependencies'] ?? {}, deps, false);
+    _populateFromSection(pubspec['dev_dependencies'] ?? {}, deps, true);
 
     return deps;
   }
 
   static void _populateFromSection(
-      Map<String, parse.Dependency> yaml, Set<Dependency> value, bool isDev) {
-    yaml.forEach((String key, parse.Dependency constraint) {
+      YamlMap yaml, Set<Dependency> value, bool isDev) {
+    yaml.forEach((String key, constraint) {
       String constraintString;
-      if (constraint is parse.HostedDependency) {
-        constraintString = constraint.version.toString();
+      if (constraint is YamlMap) {
+        constraintString = constraint['version'];
       } else {
-        constraintString = constraint.toString();
+        constraintString = constraint;
       }
 
       var dep = new Dependency._(key, constraintString, isDev);
@@ -74,7 +74,7 @@ class Dependency {
 VersionConstraint _parseOrNull(String input) {
   try {
     return new VersionConstraint.parse(input);
-  } on FormatException {
+  } catch (e) {
     return VersionConstraint.empty;
   }
 }

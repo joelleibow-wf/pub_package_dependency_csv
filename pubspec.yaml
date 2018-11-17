@@ -1,10 +1,10 @@
 name: pub_package_dependency_graph
 version: 0.1.0
 environment:
-  sdk: ^2.0.0
+  sdk: ">=1.24.3 <2.0.0"
 dependencies:
   args: ^1.5.0
-  collection: ^1.14.11
-  path: ^1.6.2
+  collection: ^1.14.6
+  path: ^1.5.1
   pub_semver: ^1.4.2
-  pubspec_parse: ^0.1.2+3
+  yaml: ^2.1.13

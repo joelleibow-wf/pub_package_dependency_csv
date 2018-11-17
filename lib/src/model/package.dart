@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:pubspec_parse/pubspec_parse.dart' hide Dependency;
+import 'package:yaml/yaml.dart';
 
 import './dependency.dart';
 
@@ -39,13 +39,14 @@ class Package {
 
     var pubspecPath = p.join(path, 'pubspec.yaml');
 
-    var pubspec = new Pubspec.parse(new File(pubspecPath).readAsStringSync(),
+    var pubspec = loadYaml(new File(pubspecPath).readAsStringSync(),
         sourceUrl: pubspecPath);
     var deps = Dependency.getDependencies(pubspec);
-    var sdkConstraint = pubspec.environment['sdk'];
+    var sdkConstraint =
+        (pubspec['environment'] != null) ? pubspec['environment']['sdk'] : null;
 
     var package =
-        new Package._(pubspec.name, pubspec.version, deps, sdkConstraint);
+        new Package._(pubspec['name'], pubspec['version'], deps, sdkConstraint);
 
     return package;
   }
