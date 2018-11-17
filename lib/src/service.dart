@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import './model/package.dart';
+
 class PubPackageDependencyGraphService {
-  getPackageFromDirectory(String packagePath) {
-    print(packagePath);
+  Future<Package> getPackageFromDirectory(String packagePath) async {
+    return await Package.forDirectory(packagePath);
   }
 }
