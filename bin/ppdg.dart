@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:args/args.dart';
 import 'package:path/path.dart' as path;
 
@@ -15,6 +17,11 @@ main(List<String> arguments) async {
       await pubPackageDependencyGraphService.getPackageFromDirectory(
           parsedArgs.rest.isNotEmpty ? parsedArgs.rest[0] : parsedArgs['path']);
 
-  print(packageRoot.root);
-  packageRoot.packages.forEach((name, pack) => print('${name}: ${pack}'));
+  final now = new DateTime.now();
+  _writeCsvFile(new CsvService().getDependencyGraphCsv(packageRoot),
+      '${now.year}${now.month}${now.day}_${packageRoot.root.name}.csv');
+}
+
+_writeCsvFile(String csv, String fileName) {
+  new File(path.join('tool', 'csv', fileName)).writeAsString(csv);
 }
