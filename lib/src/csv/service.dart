@@ -14,12 +14,14 @@ class CsvService {
         'package',
         'resolvedVersion',
         'sdkConstraint',
+        'isHosted',
         'dependant'
       ], // Header row
       [
         packageRoot.root.name,
         packageRoot.root.version.toString(),
         packageRoot.root.sdkConstraint.toString(),
+        packageRoot.root.isHosted,
         ''
       ]
     ];
@@ -34,6 +36,7 @@ class CsvService {
         immediateDependencyPack.name,
         immediateDependencyPack.version.toString(),
         immediateDependencyPack.sdkConstraint.toString(),
+        immediateDependencyPack.isHosted,
         packageRoot.root.name
       ]);
     }
@@ -55,6 +58,7 @@ class CsvService {
             depPack.name,
             depPack.version.toString(),
             depPack.sdkConstraint.toString(),
+            depPack.isHosted,
             package.name
           ]);
         }

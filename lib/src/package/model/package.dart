@@ -11,6 +11,7 @@ import './dependency.dart';
 class Package {
   final String name;
   final Version version;
+  final String publishTo;
   final Set<Dependency> dependencies;
   final VersionConstraint sdkConstraint;
   bool isPrimary = false;
@@ -30,7 +31,12 @@ class Package {
 
   Version get latestVersion => _latestVersion;
 
-  Package._(this.name, this.version, Set<Dependency> deps, this.sdkConstraint)
+  bool get isHosted =>
+      (this.publishTo != null) &&
+      (this.publishTo != 'https://pub.dartlang.org/');
+
+  Package._(this.name, this.version, this.publishTo, Set<Dependency> deps,
+      this.sdkConstraint)
       : dependencies = new UnmodifiableSetView(deps);
 
   static Future<Package> forDirectory(String path) async {
@@ -45,8 +51,8 @@ class Package {
     var sdkConstraint =
         (pubspec['environment'] != null) ? pubspec['environment']['sdk'] : null;
 
-    var package =
-        new Package._(pubspec['name'], pubspec['version'], deps, sdkConstraint);
+    var package = new Package._(pubspec['name'], pubspec['version'],
+        pubspec['publish_to'], deps, sdkConstraint);
 
     return package;
   }
