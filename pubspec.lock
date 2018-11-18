@@ -19,6 +19,12 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.14.6"
+  csv:
+    description:
+      name: csv
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.3.0"
   meta:
     description:
       name: meta
