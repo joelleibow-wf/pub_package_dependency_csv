@@ -14,6 +14,7 @@ class Package {
   final String publishTo;
   final Set<Dependency> dependencies;
   final VersionConstraint sdkConstraint;
+  final Version compatibleWithSdkVersion;
   bool isPrimary = false;
 
   bool _onlyDev = true;
@@ -32,14 +33,19 @@ class Package {
   Version get latestVersion => _latestVersion;
 
   bool get isHosted =>
-      (this.publishTo != null) &&
-      (this.publishTo != 'https://pub.dartlang.org/');
+      (publishTo != null) && (publishTo != 'https://pub.dartlang.org/');
+
+  bool get supportsSdkVersion =>
+      (compatibleWithSdkVersion != null && sdkConstraint != null) &&
+      sdkConstraint.allows(compatibleWithSdkVersion);
 
   Package._(this.name, this.version, this.publishTo, Set<Dependency> deps,
-      this.sdkConstraint)
+      this.sdkConstraint,
+      {this.compatibleWithSdkVersion})
       : dependencies = new UnmodifiableSetView(deps);
 
-  static Future<Package> forDirectory(String path) async {
+  static Future<Package> forDirectory(String path,
+      {Version compatibleWithSdkVersion}) async {
     var dir = new Directory(path);
     assert(dir.existsSync());
 
@@ -48,11 +54,13 @@ class Package {
     var pubspec = loadYaml(new File(pubspecPath).readAsStringSync(),
         sourceUrl: pubspecPath);
     var deps = Dependency.getDependencies(pubspec);
-    var sdkConstraint =
-        (pubspec['environment'] != null) ? pubspec['environment']['sdk'] : null;
+    var sdkConstraint = (pubspec['environment'] != null)
+        ? new VersionConstraint.parse(pubspec['environment']['sdk'])
+        : null;
 
     var package = new Package._(pubspec['name'], pubspec['version'],
-        pubspec['publish_to'], deps, sdkConstraint);
+        pubspec['publish_to'], deps, sdkConstraint,
+        compatibleWithSdkVersion: compatibleWithSdkVersion);
 
     return package;
   }

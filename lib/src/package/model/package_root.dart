@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 
 import './dependency.dart';
 import './package.dart';
@@ -12,20 +13,25 @@ import './package.dart';
 class PackageRoot {
   final Package root;
   final Map<String, Package> packages;
+  final Version compatibleWithSdkVersion;
 
-  PackageRoot._(this.root, Map<String, Package> packages)
+  PackageRoot._(this.root, Map<String, Package> packages,
+      {this.compatibleWithSdkVersion})
       : this.packages = new UnmodifiableMapView(packages);
 
-  static Future<PackageRoot> forDirectory(String path) async {
+  static Future<PackageRoot> forDirectory(String path,
+      {Version compatibleWithSdkVersion}) async {
     var root = await Package.forDirectory(path);
-    var packages = await _getReferencedPackages(path);
+    var packages = await _getReferencedPackages(path,
+        compatibleWithSdkVersion: compatibleWithSdkVersion);
 
     // want to make sure that the root node instance is the same
     // as the instance in the packages collection
     root = packages[root.name];
     assert(root != null);
 
-    var packageRoot = new PackageRoot._(root, packages);
+    var packageRoot = new PackageRoot._(root, packages,
+        compatibleWithSdkVersion: compatibleWithSdkVersion);
 
     packageRoot._update();
 
@@ -105,7 +111,8 @@ Future<Map<String, String>> _getPackageMap(String path) async {
   return map;
 }
 
-Future<Map<String, Package>> _getReferencedPackages(String path) async {
+Future<Map<String, Package>> _getReferencedPackages(String path,
+    {compatibleWithSdkVersion}) async {
   var packs = new SplayTreeMap<String, Package>();
 
   Map<String, String> map;
@@ -118,7 +125,8 @@ Future<Map<String, Package>> _getReferencedPackages(String path) async {
   List packaageNames = map.keys.toList();
   for (var i = 0; i < packaageNames.length; i++) {
     var subPath = map[packaageNames[i]];
-    var vp = await Package.forDirectory(subPath);
+    var vp = await Package.forDirectory(subPath,
+        compatibleWithSdkVersion: compatibleWithSdkVersion);
     assert(vp.name == packaageNames[i]);
 
     assert(!packs.containsKey(vp.name));
