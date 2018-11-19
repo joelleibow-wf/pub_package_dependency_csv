@@ -9,56 +9,65 @@ class CsvService {
   getDependencyGraphCsv(PackageRoot packageRoot,
       {bool includeSdkCompatibility}) {
     var toWalk = new Queue<Package>();
-    var visited = new Set<String>.from([packageRoot.root.name]);
+    var isKnown = new Set<String>.from([packageRoot.root.name]);
+
     List<List<String>> csvRows = [
       [
         'package',
         'resolvedVersion',
         'sdkConstraint',
         'isHosted',
-        'dependant'
+        'dependent',
+        'devDependent'
       ], // Header row
       [
         packageRoot.root.name,
         packageRoot.root.version.toString(),
         packageRoot.root.sdkConstraint.toString(),
         '${packageRoot.root.isHosted}',
+        '',
         ''
       ] // Root package row
     ];
 
     if (includeSdkCompatibility) {
-      csvRows[0].insert(4, 'supportsProvidedSdkVersion');
-      csvRows[1].insert(4, '${packageRoot.root.supportsSdkVersion}');
+      csvRows[0].insert((csvRows[0].length - 2),
+          'supportsProvidedSdkVersion'); // We always want dependant and devDependent as the last 2 columns
+      csvRows[1].insert((csvRows[1].length - 2),
+          '${packageRoot.root.supportsSdkVersion}'); // We always want dependant and devDependent as the last 2 columns
     }
 
     var immediateDependencies =
-        packageRoot.root.dependencies.map((dep) => dep.name).toSet();
+        packageRoot.root.dependencies.map((dep) => dep).toSet();
 
-    for (var name in immediateDependencies) {
-      var immediateDependencyPack = packageRoot.getPackage(name);
+    for (var immediateDep in immediateDependencies) {
+      var immediateDependencyPack = packageRoot.getPackage(immediateDep.name);
       toWalk.add(immediateDependencyPack);
 
       var immediateDependencyRow = [
         immediateDependencyPack.name,
         immediateDependencyPack.version.toString(),
         immediateDependencyPack.sdkConstraint.toString(),
-        '${immediateDependencyPack.isHosted}',
-        packageRoot.root.name
+        '${immediateDependencyPack.isHosted}'
       ];
 
+      var dependentType = (immediateDep.isDevDependency)
+          ? ['', packageRoot.root.name]
+          : [packageRoot.root.name, ''];
+      immediateDependencyRow.addAll(dependentType);
+
       if (includeSdkCompatibility)
-        immediateDependencyRow.insert(
-            4, '${immediateDependencyPack.supportsSdkVersion}');
+        immediateDependencyRow.insert((immediateDependencyRow.length - 2),
+            '${immediateDependencyPack.supportsSdkVersion}'); // We always want dependant and devDependent as the last 2 columns
       csvRows.add(immediateDependencyRow);
     }
 
     while (toWalk.isNotEmpty) {
       var package = toWalk.removeFirst();
 
-      if (visited.contains(package.name)) continue;
+      if (isKnown.contains(package.name)) continue;
 
-      visited.add(package.name);
+      isKnown.add(package.name);
 
       for (var dep in package.dependencies) {
         var depPack = packageRoot.getPackage(dep.name);
@@ -71,12 +80,16 @@ class CsvService {
             depPack.name,
             depPack.version.toString(),
             depPack.sdkConstraint.toString(),
-            depPack.isHosted,
-            package.name
+            depPack.isHosted
           ];
 
+          var dependentType =
+              (dep.isDevDependency) ? ['', package.name] : [package.name, ''];
+          depPackRow.addAll(dependentType);
+
           if (includeSdkCompatibility)
-            depPackRow.insert(4, '${depPack.supportsSdkVersion}');
+            depPackRow.insert((depPackRow.length - 2),
+                '${depPack.supportsSdkVersion}'); // We always want dependant and devDependent as the last 2 columns
           csvRows.add(depPackRow);
         }
       }
