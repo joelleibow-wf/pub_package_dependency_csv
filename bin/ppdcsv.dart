@@ -4,7 +4,7 @@ import 'package:args/args.dart';
 import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart';
 
-import 'package:pub_package_dependency_graph/pub_package_dependency_graph.dart';
+import 'package:pub_package_dependency_csv/pub_package_dependency_csv.dart';
 
 main(List<String> arguments) async {
   final parser = new ArgParser();
